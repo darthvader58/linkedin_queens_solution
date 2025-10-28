@@ -1,8 +1,3 @@
-/*
- * puzzle.h - Core puzzle data structure and operations
- * This is like a "class" definition in OOP
- */
-
 #ifndef PUZZLE_H
 #define PUZZLE_H
 
@@ -48,4 +43,4 @@ void puzzle_mark_col_used(Puzzle* puzzle, int col, bool used);
 bool puzzle_is_row_used(const Puzzle* puzzle, int row);
 bool puzzle_is_col_used(const Puzzle* puzzle, int col);
 
-#endif /* PUZZLE_H */
+#endif

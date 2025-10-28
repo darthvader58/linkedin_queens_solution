@@ -22,7 +22,7 @@ AppConfig parse_arguments(int argc, char* argv[]) {
     config.find_all = false;
     config.show_regions = false;
     config.show_help = false;
-    config.region_type = REGION_IRREGULAR;
+    config.region_type = REGION_CONTINUOUS;  // LinkedIn-like continuous regions
     config.verbose = true;
     
     if (argc < 2) {
@@ -41,6 +41,10 @@ AppConfig parse_arguments(int argc, char* argv[]) {
             config.region_type = REGION_STRIPE;
         } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--irregular") == 0) {
             config.region_type = REGION_IRREGULAR;
+        } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--continuous") == 0) {
+            config.region_type = REGION_CONTINUOUS;
+        } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--edit") == 0) {
+            config.region_type = REGION_INTERACTIVE;
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             config.show_help = true;
         } else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0) {
@@ -80,6 +84,15 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error: Invalid region configuration\n");
         puzzle_destroy(puzzle);
         return 1;
+    }
+    
+    // Check if regions are continuous
+    if (config.verbose) {
+        if (region_verify_continuous(puzzle)) {
+            printf("✓ All regions are continuous\n\n");
+        } else {
+            printf("⚠ Warning: Some regions are not continuous\n\n");
+        }
     }
     
     // Configure solver

@@ -34,9 +34,6 @@ clean:
 	rm -f $(OBJS) $(TARGET)
 	@echo "Clean complete!"
 
-# Rebuild everything
-rebuild: clean all
-
 # Run with default 8x8 board
 run: $(TARGET)
 	./$(TARGET) 8

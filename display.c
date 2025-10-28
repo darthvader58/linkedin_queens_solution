@@ -25,11 +25,13 @@ void display_help(void) {
     printf("  5. No two queens diagonally adjacent (8-directional)\n\n");
     
     printf("Usage:\n");
-    printf("  -a, --all        Find all solutions\n");
-    printf("  -r, --regions    Show region map\n");
-    printf("  -s, --stripe     Use stripe regions\n");
-    printf("  -i, --irregular  Use irregular regions (default)\n");
-    printf("  -h, --help       Show this help\n\n");
+    printf("  -a, --all           Find all solutions\n");
+    printf("  -r, --regions       Show region map\n");
+    printf("  -c, --continuous    Use continuous irregular regions (default, LinkedIn-like)\n");
+    printf("  -s, --stripe        Use stripe regions (simple)\n");
+    printf("  -i, --irregular     Use old irregular regions (not continuous)\n");
+    printf("  -e, --edit          Interactive region editor\n");
+    printf("  -h, --help          Show this help\n\n");
 }
 
 void display_regions(const Puzzle* puzzle) {

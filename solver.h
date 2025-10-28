@@ -1,8 +1,3 @@
-/*
- * solver.h - Puzzle solving algorithms
- * Contains backtracking solver implementation
- */
-
 #ifndef SOLVER_H
 #define SOLVER_H
 
@@ -33,4 +28,4 @@ typedef struct {
 
 SolverStats solver_get_stats(const Puzzle* puzzle);
 
-#endif /* SOLVER_H */
+#endif

@@ -1,7 +1,3 @@
-/*
- * validator.c - Implementation of validation logic
- */
-
 #include "validator.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +7,7 @@ static const int DX[] = {-1, -1, -1, 0, 0, 1, 1, 1};
 static const int DY[] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
 bool validator_is_diagonally_adjacent(const Puzzle* puzzle, int row1, int col1, int row2, int col2) {
+    (void)puzzle; // Unused parameter
     int dr = abs(row1 - row2);
     int dc = abs(col1 - col2);
     

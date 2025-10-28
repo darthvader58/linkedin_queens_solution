@@ -1,8 +1,3 @@
-/*
- * region.h - Region management module
- * Handles creation and manipulation of puzzle regions
- */
-
 #ifndef REGION_H
 #define REGION_H
 
@@ -11,8 +6,10 @@
 /* Region generation strategies */
 typedef enum {
     REGION_STRIPE,      // Horizontal stripes
-    REGION_IRREGULAR,   // Irregular/complex regions (LinkedIn-like)
-    REGION_CUSTOM       // Load from custom data
+    REGION_IRREGULAR,   // Irregular/complex regions (OLD - not continuous)
+    REGION_CONTINUOUS,  // Continuous irregular regions (LINKEDIN-LIKE)
+    REGION_CUSTOM,      // Load from custom data
+    REGION_INTERACTIVE  // Interactive creation
 } RegionType;
 
 /* Create stripe regions (each row is a region) */
@@ -33,4 +30,13 @@ bool region_validate(const Puzzle* puzzle);
 /* Count cells in a region */
 int region_count_cells(const Puzzle* puzzle, int region_id);
 
-#endif /* REGION_H */
+/* Generate continuous irregular regions (LINKEDIN-LIKE) */
+void region_generate_continuous(Puzzle* puzzle);
+
+/* Verify that all regions are continuous/connected */
+bool region_verify_continuous(const Puzzle* puzzle);
+
+/* Interactive region creator */
+void region_create_interactive(Puzzle* puzzle);
+
+#endif

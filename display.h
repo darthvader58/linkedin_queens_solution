@@ -1,8 +1,3 @@
-/*
- * display.h - Display and visualization module
- * Handles all terminal output and board rendering
- */
-
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
@@ -36,4 +31,4 @@ void display_help(void);
 /* Display statistics */
 void display_stats(const Puzzle* puzzle);
 
-#endif /* DISPLAY_H */
+#endif

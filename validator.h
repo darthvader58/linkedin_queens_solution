@@ -1,8 +1,3 @@
-/*
- * validator.h - Solution validation module
- * Checks if puzzle solutions satisfy all constraints
- */
-
 #ifndef VALIDATOR_H
 #define VALIDATOR_H
 
@@ -26,4 +21,4 @@ bool validator_check_columns(const Puzzle* puzzle);
 bool validator_check_regions(const Puzzle* puzzle);
 bool validator_check_diagonals(const Puzzle* puzzle);
 
-#endif /* VALIDATOR_H */
+#endif 
