@@ -73,6 +73,9 @@ int main(int argc, char* argv[]) {
     // Generate regions
     region_generate(puzzle, config.region_type);
     
+    // Build region cell lookup tables for optimization
+    puzzle_build_region_lists(puzzle);
+    
     // Validate regions
     if (!region_validate(puzzle)) {
         fprintf(stderr, "Error: Invalid region configuration\n");

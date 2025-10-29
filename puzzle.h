@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define MAX_N 16
+#define MAX_N 32
 
 typedef struct {
     int n;                              // Board size
@@ -14,6 +14,11 @@ typedef struct {
     bool col_used[MAX_N];               // Track used columns
     int solution_count;                 // Number of solutions found
     bool found;                         // Flag for first solution found
+    
+    // Optimization: pre-computed region cell lists
+    int region_cells_row[MAX_N][MAX_N * MAX_N];  // Row coordinates of cells in each region
+    int region_cells_col[MAX_N][MAX_N * MAX_N];  // Col coordinates of cells in each region
+    int region_size[MAX_N];                       // Number of cells in each region
 } Puzzle;
 
 /* Constructor-like function */
@@ -42,5 +47,8 @@ void puzzle_mark_row_used(Puzzle* puzzle, int row, bool used);
 void puzzle_mark_col_used(Puzzle* puzzle, int col, bool used);
 bool puzzle_is_row_used(const Puzzle* puzzle, int row);
 bool puzzle_is_col_used(const Puzzle* puzzle, int col);
+
+/* Optimization: build region cell lookup tables */
+void puzzle_build_region_lists(Puzzle* puzzle);
 
 #endif

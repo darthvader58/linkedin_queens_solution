@@ -94,3 +94,25 @@ bool puzzle_is_col_used(const Puzzle* puzzle, int col) {
     }
     return false;
 }
+
+void puzzle_build_region_lists(Puzzle* puzzle) {
+    int n = puzzle->n;
+    
+    // Initialize region sizes to 0
+    for (int i = 0; i < n; i++) {
+        puzzle->region_size[i] = 0;
+    }
+    
+    // Build lists of cells for each region
+    for (int row = 0; row < n; row++) {
+        for (int col = 0; col < n; col++) {
+            int region = puzzle->regions[row][col];
+            if (region >= 0 && region < n) {
+                int idx = puzzle->region_size[region];
+                puzzle->region_cells_row[region][idx] = row;
+                puzzle->region_cells_col[region][idx] = col;
+                puzzle->region_size[region]++;
+            }
+        }
+    }
+}

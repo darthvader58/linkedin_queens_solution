@@ -32,29 +32,32 @@ void solver_backtrack(Puzzle* puzzle, int region, SolverConfig config) {
         return;
     }
     
-    // Try placing queen in each cell of this region
-    for (int row = 0; row < n; row++) {
-        for (int col = 0; col < n; col++) {
-            g_nodes_explored++;
+    // OPTIMIZATION: Only try cells that belong to this region
+    int region_cell_count = puzzle->region_size[region];
+    
+    for (int i = 0; i < region_cell_count; i++) {
+        int row = puzzle->region_cells_row[region][i];
+        int col = puzzle->region_cells_col[region][i];
+        
+        g_nodes_explored++;
+        
+        if (validator_can_place(puzzle, row, col, region)) {
+            // Place queen
+            puzzle_set_cell(puzzle, row, col, region);
+            puzzle_mark_row_used(puzzle, row, true);
+            puzzle_mark_col_used(puzzle, col, true);
             
-            if (validator_can_place(puzzle, row, col, region)) {
-                // Place queen
-                puzzle_set_cell(puzzle, row, col, region);
-                puzzle_mark_row_used(puzzle, row, true);
-                puzzle_mark_col_used(puzzle, col, true);
-                
-                // Recurse to next region
-                solver_backtrack(puzzle, region + 1, config);
-                
-                // Backtrack
-                puzzle_clear_cell(puzzle, row, col);
-                puzzle_mark_row_used(puzzle, row, false);
-                puzzle_mark_col_used(puzzle, col, false);
-                
-                // Early exit if found and don't need all
-                if (!config.find_all_solutions && puzzle_has_solution(puzzle)) {
-                    return;
-                }
+            // Recurse to next region
+            solver_backtrack(puzzle, region + 1, config);
+            
+            // Backtrack
+            puzzle_clear_cell(puzzle, row, col);
+            puzzle_mark_row_used(puzzle, row, false);
+            puzzle_mark_col_used(puzzle, col, false);
+            
+            // Early exit if found and don't need all
+            if (!config.find_all_solutions && puzzle_has_solution(puzzle)) {
+                return;
             }
         }
     }
