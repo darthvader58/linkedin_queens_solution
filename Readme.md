@@ -19,3 +19,5 @@ make
 ./linkedin_queens_solution 8 --edit
 ```
 
+### 3. **Change MAX_N for board size limit**
+In line 6, ```puzzle.h```<br>  
