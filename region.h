@@ -5,18 +5,10 @@
 
 /* Region generation strategies */
 typedef enum {
-    REGION_STRIPE,      // Horizontal stripes
-    REGION_IRREGULAR,   // Irregular/complex regions (OLD - not continuous)
     REGION_CONTINUOUS,  // Continuous irregular regions (LINKEDIN-LIKE)
     REGION_CUSTOM,      // Load from custom data
     REGION_INTERACTIVE  // Interactive creation
 } RegionType;
-
-/* Create stripe regions (each row is a region) */
-void region_create_stripe(Puzzle* puzzle);
-
-/* Create irregular regions (more LinkedIn-like) */
-void region_create_irregular(Puzzle* puzzle);
 
 /* Load custom regions from 2D array */
 void region_load_custom(Puzzle* puzzle, int regions[][MAX_N]);
@@ -30,7 +22,7 @@ bool region_validate(const Puzzle* puzzle);
 /* Count cells in a region */
 int region_count_cells(const Puzzle* puzzle, int region_id);
 
-/* Generate continuous irregular regions (LINKEDIN-LIKE) */
+/* Generate continuous irregular regions (LINKEDIN-LIKE) - Works for any N×N board */
 void region_generate_continuous(Puzzle* puzzle);
 
 /* Verify that all regions are continuous/connected */

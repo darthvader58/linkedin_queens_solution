@@ -4,42 +4,6 @@
 #include <time.h>
 #include <stdio.h>
 
-void region_create_stripe(Puzzle* puzzle) {
-    int n = puzzle_get_size(puzzle);
-    for (int row = 0; row < n; row++) {
-        for (int col = 0; col < n; col++) {
-            puzzle->regions[row][col] = row;
-        }
-    }
-}
-
-void region_create_irregular(Puzzle* puzzle) {
-    int n = puzzle_get_size(puzzle);
-    
-    // Example 8x8 irregular pattern (LinkedIn-like)
-    if (n == 8) {
-        int pattern[8][8] = {
-            {0, 0, 1, 1, 2, 2, 3, 3},
-            {0, 0, 1, 1, 2, 2, 3, 3},
-            {4, 4, 5, 5, 6, 6, 7, 7},
-            {4, 4, 5, 5, 6, 6, 7, 7},
-            {0, 1, 1, 2, 2, 3, 3, 7},
-            {0, 4, 5, 5, 6, 6, 7, 7},
-            {4, 4, 5, 5, 6, 6, 1, 2},
-            {0, 4, 5, 3, 3, 2, 2, 7}
-        };
-        
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                puzzle->regions[row][col] = pattern[row][col];
-            }
-        }
-    } else {
-        // Default to stripe for other sizes
-        region_create_stripe(puzzle);
-    }
-}
-
 void region_load_custom(Puzzle* puzzle, int regions[][MAX_N]) {
     int n = puzzle_get_size(puzzle);
     for (int row = 0; row < n; row++) {
@@ -51,12 +15,6 @@ void region_load_custom(Puzzle* puzzle, int regions[][MAX_N]) {
 
 void region_generate(Puzzle* puzzle, RegionType type) {
     switch (type) {
-        case REGION_STRIPE:
-            region_create_stripe(puzzle);
-            break;
-        case REGION_IRREGULAR:
-            region_create_irregular(puzzle);
-            break;
         case REGION_CONTINUOUS:
             region_generate_continuous(puzzle);
             break;
@@ -130,7 +88,7 @@ static bool is_valid_unassigned(int regions[][MAX_N], int n, int row, int col) {
 }
 
 /*
- * Count unassigned neighbors
+ * Count unassigned neighbors (4-directional)
  */
 static int count_unassigned_neighbors(int regions[][MAX_N], int n, int row, int col) {
     int count = 0;
@@ -145,11 +103,11 @@ static int count_unassigned_neighbors(int regions[][MAX_N], int n, int row, int 
 }
 
 /*
- * Get all neighbors of a given region
+ * Get all frontier cells (unassigned cells adjacent to a specific region)
  */
-static void get_region_neighbors(int regions[][MAX_N], int n, int region_id, 
-                                 int* neighbors_r, int* neighbors_c, int* count) {
-    *count = 0;
+static int get_region_frontier(int regions[][MAX_N], int n, int region_id, 
+                                int* frontier_r, int* frontier_c) {
+    int count = 0;
     
     // Find all cells in this region
     for (int row = 0; row < n; row++) {
@@ -163,27 +121,65 @@ static void get_region_neighbors(int regions[][MAX_N], int n, int region_id,
                     if (is_valid_unassigned(regions, n, nr, nc)) {
                         // Check if not already in list
                         bool already_added = false;
-                        for (int i = 0; i < *count; i++) {
-                            if (neighbors_r[i] == nr && neighbors_c[i] == nc) {
+                        for (int i = 0; i < count; i++) {
+                            if (frontier_r[i] == nr && frontier_c[i] == nc) {
                                 already_added = true;
                                 break;
                             }
                         }
                         
                         if (!already_added) {
-                            neighbors_r[*count] = nr;
-                            neighbors_c[*count] = nc;
-                            (*count)++;
+                            frontier_r[count] = nr;
+                            frontier_c[count] = nc;
+                            count++;
                         }
                     }
                 }
             }
         }
     }
+    
+    return count;
 }
 
 /*
- * Generate continuous irregular regions using region-growing algorithm
+ * Find the best next cell to add to a region
+ * Prefer cells with fewer unassigned neighbors to avoid creating isolated cells
+ */
+static bool find_best_frontier_cell(int regions[][MAX_N], int n, int region_id,
+                                     int* best_row, int* best_col) {
+    int frontier_r[MAX_N * MAX_N];
+    int frontier_c[MAX_N * MAX_N];
+    int frontier_count = get_region_frontier(regions, n, region_id, frontier_r, frontier_c);
+    
+    if (frontier_count == 0) {
+        return false;
+    }
+    
+    // Find the frontier cell with the fewest unassigned neighbors
+    int min_neighbors = 5;
+    int best_idx = -1;
+    
+    for (int i = 0; i < frontier_count; i++) {
+        int neighbors = count_unassigned_neighbors(regions, n, frontier_r[i], frontier_c[i]);
+        if (neighbors < min_neighbors || (neighbors == min_neighbors && rand() % 2 == 0)) {
+            min_neighbors = neighbors;
+            best_idx = i;
+        }
+    }
+    
+    if (best_idx >= 0) {
+        *best_row = frontier_r[best_idx];
+        *best_col = frontier_c[best_idx];
+        return true;
+    }
+    
+    return false;
+}
+
+/*
+ * Generate continuous irregular regions using improved region-growing algorithm
+ * Works for any N×N board
  */
 void region_generate_continuous(Puzzle* puzzle) {
     int n = puzzle_get_size(puzzle);
@@ -199,19 +195,34 @@ void region_generate_continuous(Puzzle* puzzle) {
     }
     
     // Seed random number generator with current time
-    srand((unsigned int)time(NULL));
+    static int seed_initialized = 0;
+    if (!seed_initialized) {
+        srand((unsigned int)time(NULL));
+        seed_initialized = 1;
+    }
     
-    // Arrays to store potential neighbors
-    int neighbors_r[MAX_N * MAX_N];
-    int neighbors_c[MAX_N * MAX_N];
+    // Calculate target size for each region (with some variation)
+    int total_cells = n * n;
+    int cells_assigned = 0;
     
     // Generate n regions
-    int total_assigned = 0;
-    int target_size = n;  // Each region should have approximately n cells
-    
     for (int region_id = 0; region_id < n; region_id++) {
         int region_size = 0;
         int start_row, start_col;
+        
+        // Determine target size for this region
+        int remaining_cells = total_cells - cells_assigned;
+        int remaining_regions = n - region_id;
+        int target_size = remaining_cells / remaining_regions;
+        
+        // Add some randomness (±20%)
+        int variation = target_size / 5;
+        if (variation > 0 && region_id < n - 1) {
+            target_size += (rand() % (2 * variation + 1)) - variation;
+        }
+        
+        // Ensure at least 1 cell per region
+        if (target_size < 1) target_size = 1;
         
         // Pick starting cell
         if (region_id == 0) {
@@ -219,17 +230,22 @@ void region_generate_continuous(Puzzle* puzzle) {
             start_row = rand() % n;
             start_col = rand() % n;
         } else {
-            // Find a cell adjacent to existing regions
+            // Find an unassigned cell adjacent to any existing region
             bool found = false;
+            
+            // Try multiple attempts to find a good starting cell
             for (int attempt = 0; attempt < 100 && !found; attempt++) {
+                // Pick a random existing region
                 int check_region = rand() % region_id;
-                int neighbor_count;
-                get_region_neighbors(regions, n, check_region, neighbors_r, neighbors_c, &neighbor_count);
+                int frontier_r[MAX_N * MAX_N];
+                int frontier_c[MAX_N * MAX_N];
+                int frontier_count = get_region_frontier(regions, n, check_region, 
+                                                        frontier_r, frontier_c);
                 
-                if (neighbor_count > 0) {
-                    int idx = rand() % neighbor_count;
-                    start_row = neighbors_r[idx];
-                    start_col = neighbors_c[idx];
+                if (frontier_count > 0) {
+                    int idx = rand() % frontier_count;
+                    start_row = frontier_r[idx];
+                    start_col = frontier_c[idx];
                     found = true;
                 }
             }
@@ -251,44 +267,50 @@ void region_generate_continuous(Puzzle* puzzle) {
         // Assign starting cell
         regions[start_row][start_col] = region_id;
         region_size++;
-        total_assigned++;
+        cells_assigned++;
         
-        // Grow region
-        while (region_size < target_size && total_assigned < n * n) {
-            int neighbor_count;
-            get_region_neighbors(regions, n, region_id, neighbors_r, neighbors_c, &neighbor_count);
+        // Grow region using best-first strategy
+        while (region_size < target_size && cells_assigned < total_cells) {
+            int next_row, next_col;
             
-            if (neighbor_count == 0) break;
-            
-            // Pick a random neighbor
-            int idx = rand() % neighbor_count;
-            int next_row = neighbors_r[idx];
-            int next_col = neighbors_c[idx];
-            
-            regions[next_row][next_col] = region_id;
-            region_size++;
-            total_assigned++;
+            if (find_best_frontier_cell(regions, n, region_id, &next_row, &next_col)) {
+                regions[next_row][next_col] = region_id;
+                region_size++;
+                cells_assigned++;
+            } else {
+                // No more cells can be added to this region
+                break;
+            }
         }
     }
     
-    // Assign remaining cells to nearest region
+    // Assign remaining cells to nearest region (should be rare or none)
+    for (int pass = 0; pass < n && cells_assigned < total_cells; pass++) {
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                if (regions[row][col] == -1) {
+                    // Find nearest assigned neighbor
+                    for (int d = 0; d < 4; d++) {
+                        int nr = row + DX4[d];
+                        int nc = col + DY4[d];
+                        
+                        if (nr >= 0 && nr < n && nc >= 0 && nc < n && regions[nr][nc] != -1) {
+                            regions[row][col] = regions[nr][nc];
+                            cells_assigned++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Final fallback: assign any remaining cells to region 0
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
             if (regions[row][col] == -1) {
-                // Find nearest assigned neighbor
-                for (int d = 0; d < 4; d++) {
-                    int nr = row + DX4[d];
-                    int nc = col + DY4[d];
-                    
-                    if (nr >= 0 && nr < n && nc >= 0 && nc < n && regions[nr][nc] != -1) {
-                        regions[row][col] = regions[nr][nc];
-                        break;
-                    }
-                }
-                
-                if (regions[row][col] == -1) {
-                    regions[row][col] = 0;
-                }
+                regions[row][col] = 0;
+                cells_assigned++;
             }
         }
     }

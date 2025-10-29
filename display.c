@@ -27,9 +27,6 @@ void display_help(void) {
     printf("Usage:\n");
     printf("  -a, --all           Find all solutions\n");
     printf("  -r, --regions       Show region map\n");
-    printf("  -c, --continuous    Use continuous irregular regions (default, LinkedIn-like)\n");
-    printf("  -s, --stripe        Use stripe regions (simple)\n");
-    printf("  -i, --irregular     Use old irregular regions (not continuous)\n");
     printf("  -e, --edit          Interactive region editor\n");
     printf("  -h, --help          Show this help\n\n");
 }

@@ -46,8 +46,4 @@ run-regions: $(TARGET)
 run-all: $(TARGET)
 	./$(TARGET) 8 --all --regions
 
-# Run with stripe regions
-run-stripe: $(TARGET)
-	./$(TARGET) 8 --stripe --regions
-
-.PHONY: all clean rebuild run run-regions run-all run-stripe
+.PHONY: all clean rebuild run run-regions run-all

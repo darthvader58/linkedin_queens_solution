@@ -37,12 +37,6 @@ AppConfig parse_arguments(int argc, char* argv[]) {
             config.find_all = true;
         } else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--regions") == 0) {
             config.show_regions = true;
-        } else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stripe") == 0) {
-            config.region_type = REGION_STRIPE;
-        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--irregular") == 0) {
-            config.region_type = REGION_IRREGULAR;
-        } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--continuous") == 0) {
-            config.region_type = REGION_CONTINUOUS;
         } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--edit") == 0) {
             config.region_type = REGION_INTERACTIVE;
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {

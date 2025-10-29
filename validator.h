@@ -21,4 +21,4 @@ bool validator_check_columns(const Puzzle* puzzle);
 bool validator_check_regions(const Puzzle* puzzle);
 bool validator_check_diagonals(const Puzzle* puzzle);
 
-#endif 
+#endif
